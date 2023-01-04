@@ -133,3 +133,6 @@ data/
 
 # saved model
 model/
+
+# data files
+*.dat
