@@ -136,3 +136,8 @@ model/
 
 # data files
 *.dat
+*.csv
+*.json
+
+# executables
+*.exe
