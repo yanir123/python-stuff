@@ -16,7 +16,7 @@ int *agglomerative_clustering_single(double **data, size_t height,
         speed_top_threshold, speed_min_threshold, window_size, clusters_array);
   }
 
-  return NULL;
+  return get_cluster_array_with_origininal_indices(clusters_array);
 }
 
 double haverine_distance(double *first, double *second) {
@@ -70,13 +70,22 @@ double calc_angle_variance(double **first, size_t len, double *second,
   return sqDiff;
 }
 
-void merge_clusters(int *clusters, size_t len, int first, int second) {
-#pragma omp parallel for shared(clusters)
-  for (size_t i = 0; i < len; i++) {
-    if (clusters[i] == second) {
-      clusters[i] = first;
-    }
+cluster_t merge_clusters(cluster_t first, cluster_t second) {
+  int *temp = (int *)malloc(sizeof(int) * (first.len + second.len));
+
+#pragma omp parallel for shared(temp, first)
+  for (size_t i = 0; i < first.len; i++) {
+    temp[i] = first.indices[i];
   }
+
+#pragma omp parallel for shared(temp, second)
+  for (size_t i = 0; i < second.len; i++) {
+    temp[i + first.len] = second.indices[i];
+  }
+
+  cluster_t res = {first.cluster_id, first.len + second.len, temp};
+
+  return res;
 }
 
 int *arange(size_t len) {
@@ -95,7 +104,9 @@ uint8_t find_compatible_clusters(double **data, size_t height,
                                  double angle_variance_threshold,
                                  double speed_top_threshold,
                                  double speed_min_threshold, size_t window_size,
-                                 cluster_t *clusters) {}
+                                 cluster_t *clusters) {
+  // TODO: Implement this
+}
 
 cluster_t *create_base_array(size_t len) {
   cluster_t *clusters = (cluster_t *)malloc(sizeof(cluster_t) * len);
@@ -118,4 +129,18 @@ void free_all_clusters(cluster_t *clusters, size_t len) {
   }
 
   free(clusters);
+}
+
+int *get_cluster_array_with_origininal_indices(cluster_t *clusters, size_t len,
+                                               size_t number_of_points) {
+  int *cluster_ids = (int *)malloc(sizeof(int) * number_of_points);
+
+#pragma omp parallel for shared(clusters, cluster_ids) collapse(2)
+  for (size_t i = 0; i < len; i++) {
+    for (size_t j = 0; j < clusters[i].len; j++) {
+      cluster_ids[clusters[i].indices[j]] = clusters[i].cluster_id;
+    }
+  }
+
+  return cluster_ids
 }
