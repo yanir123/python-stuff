@@ -7,16 +7,18 @@ int *agglomerative_clustering_single(double **data, size_t height,
                                      double speed_min_threshold,
                                      size_t window_size) {
   cluster_t *clusters_array = create_base_array(height);
-
+  size_t cluster_len = height;
   uint8_t updated = TRUE;
 
   while (updated) {
     updated = find_compatible_clusters(
         data, height, distance_threshold, angle_variance_threshold,
-        speed_top_threshold, speed_min_threshold, window_size, clusters_array);
+        speed_top_threshold, speed_min_threshold, window_size, clusters_array,
+        &cluster_len);
   }
 
-  return get_cluster_array_with_origininal_indices(clusters_array);
+  return get_cluster_array_with_origininal_indices(clusters_array, cluster_len,
+                                                   height);
 }
 
 double haverine_distance(double *first, double *second) {
@@ -104,7 +106,7 @@ uint8_t find_compatible_clusters(double **data, size_t height,
                                  double angle_variance_threshold,
                                  double speed_top_threshold,
                                  double speed_min_threshold, size_t window_size,
-                                 cluster_t *clusters) {
+                                 cluster_t *clusters, size_t *cluster_len) {
   // TODO: Implement this
 }
 
@@ -142,5 +144,5 @@ int *get_cluster_array_with_origininal_indices(cluster_t *clusters, size_t len,
     }
   }
 
-  return cluster_ids
+  return cluster_ids;
 }
