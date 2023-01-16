@@ -21,7 +21,7 @@ int *agglomerative_clustering_single(double **data, size_t height,
                                                    height);
 }
 
-double haverine_distance(double *first, double *second) {
+double haversine_distance(double *first, double *second) {
   double a = pow(sin((second[LAT] - first[LAT]) / 2), 2) +
              cos(first[LAT]) * cos(second[LAT]) *
                  pow(sin((second[LON] - second[LAT]) / 2), 2);
@@ -30,7 +30,7 @@ double haverine_distance(double *first, double *second) {
 }
 
 double calc_speed(double *first, double *second) {
-  return haverine_distance(first, second) / (second[EPOCH] - first[EPOCH]);
+  return haversine_distance(first, second) / (second[EPOCH] - first[EPOCH]);
 }
 
 double angle_degree(double first_x, double first_y, double second_x,

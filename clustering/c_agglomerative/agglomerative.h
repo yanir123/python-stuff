@@ -22,7 +22,7 @@ int* agglomerative_clustering_single(double** data, size_t height,
                                      double speed_top_threshold,
                                      double speed_min_threshold,
                                      size_t window_size);
-double haverine_distance(double* first, double* second);
+double haversine_distance(double* first, double* second);
 double calc_speed(double* first, double* second);
 double calc_angle_variance(double** first, size_t len, double* second,
                            size_t window_size);
