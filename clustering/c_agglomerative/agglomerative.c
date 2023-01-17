@@ -27,18 +27,34 @@ int *agglomerative_clustering_single(double **data, size_t height,
   while (updated) {
     updated = find_compatible_clusters(
         data, height, distance_threshold, angle_variance_threshold,
-        speed_top_threshold, speed_min_threshold, window_size, clusters_array,
+        speed_top_threshold, speed_min_threshold, window_size, &clusters_array,
         &cluster_len);
   }
 
-  return get_cluster_array_with_origininal_indices(clusters_array, cluster_len,
-                                                   height);
+  int *res = get_cluster_array_with_origininal_indices(clusters_array,
+                                                       cluster_len, height);
+  free_all_clusters(clusters_array, cluster_len);
+  return res;
+}
+
+void print_array_res(int *arr, size_t len) {
+  printf("{");
+
+  for (size_t i = 0; i < len; i++) {
+    printf("%d", arr[i]);
+
+    if (i + 1 != len) {
+      printf(", ");
+    }
+  }
+
+  printf("}\n");
 }
 
 double haversine_distance(double *first, double *second) {
   double a = pow(sin((second[LAT] - first[LAT]) / 2), 2) +
              cos(first[LAT]) * cos(second[LAT]) *
-                 pow(sin((second[LON] - second[LAT]) / 2), 2);
+                 pow(sin((second[LON] - first[LON]) / 2), 2);
   double c = 2 * atan2(sqrt(a), sqrt(1 - a));
   return R * c;
 }
@@ -97,7 +113,7 @@ double calc_angle_variance(double **data, cluster_t first, cluster_t second,
 
   free(angles);
 
-  return sqDiff / (angles_number - 1);
+  return sqDiff / angles_number;
 }
 
 cluster_t merge_clusters(cluster_t first, cluster_t second) {
@@ -129,12 +145,58 @@ int *arange(size_t len) {
   return arr;
 }
 
+void free_cluster(cluster_t cluster) { free(cluster.indices); }
+
+void add_cluster_and_remove_old_ones(cluster_t **clusters, size_t *len,
+                                     cluster_t new_cluster, size_t first_index,
+                                     size_t second_index) {
+  cluster_t *new_clusters =
+      (cluster_t *)malloc(sizeof(cluster_t) * ((*len) - 1));
+
+#pragma omp parallel for
+  for (size_t i = 0; i < second_index; i++) {
+    if (i == first_index) {
+      new_clusters[i] = new_cluster;
+    } else {
+      new_clusters[i] = (*clusters)[i];
+    }
+  }
+
+#pragma omp parallel for
+  for (size_t i = second_index; i < (*len) - 1; i++) {
+    new_clusters[i] = (*clusters)[i + 1];
+  }
+
+  free_cluster((*clusters)[first_index]);
+  free_cluster((*clusters)[second_index]);
+  free(*clusters);
+
+  *clusters = new_clusters;
+  (*len)--;
+}
+
 uint8_t find_compatible_clusters(double **data, size_t height,
                                  double distance_threshold,
                                  double angle_variance_threshold,
                                  double speed_top_threshold,
                                  double speed_min_threshold, size_t window_size,
-                                 cluster_t *clusters, size_t *cluster_len) {}
+                                 cluster_t **clusters, size_t *cluster_len) {
+  for (size_t i = 0; i < (*cluster_len) - 1; i++) {
+    for (size_t j = i + 1; j < *cluster_len; j++) {
+      if (check_compatibility(data, (*clusters)[i], (*clusters)[j],
+                              distance_threshold, angle_variance_threshold,
+                              speed_top_threshold, speed_min_threshold,
+                              window_size)) {
+        cluster_t new_cluster = merge_clusters((*clusters)[i], (*clusters)[j]);
+        add_cluster_and_remove_old_ones(clusters, cluster_len, new_cluster, i,
+                                        j);
+        return TRUE;
+      }
+    }
+  }
+
+  return FALSE;
+}
 
 uint8_t check_compatibility(double **data, cluster_t first, cluster_t second,
                             double distance_threshold,

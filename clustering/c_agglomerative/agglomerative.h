@@ -26,6 +26,12 @@ int* agglomerative_clustering_single(double** data, size_t height,
                                      double speed_min_threshold,
                                      size_t window_size);
 double haversine_distance(double* first, double* second);
+void add_cluster_and_remove_old_ones(cluster_t** clusters, size_t* len,
+                                     cluster_t new_cluster, size_t first_index,
+                                     size_t second_index);
+void print_array(double* arr, size_t len);
+void free_cluster(cluster_t cluster);
+void print_array_res(int* arr, size_t len);
 double calc_speed(double* first, double* second, double distance);
 double calc_angle_variance(double** data, cluster_t first, cluster_t second,
                            size_t window_size);
@@ -38,7 +44,7 @@ uint8_t find_compatible_clusters(double** data, size_t height,
                                  double angle_variance_threshold,
                                  double speed_top_threshold,
                                  double speed_min_threshold, size_t window_size,
-                                 cluster_t* clusters, size_t* cluster_len);
+                                 cluster_t** clusters, size_t* cluster_len);
 int* get_cluster_array_with_origininal_indices(cluster_t* clusters, size_t len,
                                                size_t number_of_points);
 cluster_t* create_base_array(size_t len);
