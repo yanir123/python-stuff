@@ -417,7 +417,7 @@ int main(int argc, char** argv, char** wenv) {
 
   QueryPerformanceFrequency(&frequency);
   QueryPerformanceCounter(&start);
-  int* clusters = agglomerative_clustering(data_pointer, HEIGHT, 200, 100000,
+  int* clusters = agglomerative_clustering(data_pointer, HEIGHT, 200, 10000000,
                                            2500, 10, 0, 3);
   QueryPerformanceCounter(&end);
 
