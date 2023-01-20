@@ -14,21 +14,20 @@ void print_array(double *arr, size_t len) {
   printf("}\n");
 }
 
-int *agglomerative_clustering_single(double **data, size_t height,
-                                     double distance_threshold,
-                                     double angle_variance_threshold,
-                                     double speed_top_threshold,
-                                     double speed_min_threshold,
-                                     size_t window_size) {
+int *agglomerative_clustering(double **data, size_t height,
+                              double distance_threshold, double time_threshold,
+                              double angle_variance_threshold,
+                              double speed_top_threshold,
+                              double speed_min_threshold, size_t window_size) {
   cluster_t *clusters_array = create_base_array(height);
   size_t cluster_len = height;
   uint8_t updated = TRUE;
 
   while (updated) {
     updated = find_compatible_clusters(
-        data, height, distance_threshold, angle_variance_threshold,
-        speed_top_threshold, speed_min_threshold, window_size, &clusters_array,
-        &cluster_len);
+        data, height, distance_threshold, time_threshold,
+        angle_variance_threshold, speed_top_threshold, speed_min_threshold,
+        window_size, &clusters_array, &cluster_len);
   }
 
   int *res = get_cluster_array_with_origininal_indices(clusters_array,
@@ -177,6 +176,7 @@ void add_cluster_and_remove_old_ones(cluster_t **clusters, size_t *len,
 
 uint8_t find_compatible_clusters(double **data, size_t height,
                                  double distance_threshold,
+                                 double time_threshold,
                                  double angle_variance_threshold,
                                  double speed_top_threshold,
                                  double speed_min_threshold, size_t window_size,
@@ -184,9 +184,9 @@ uint8_t find_compatible_clusters(double **data, size_t height,
   for (size_t i = 0; i < (*cluster_len) - 1; i++) {
     for (size_t j = i + 1; j < *cluster_len; j++) {
       if (check_compatibility(data, (*clusters)[i], (*clusters)[j],
-                              distance_threshold, angle_variance_threshold,
-                              speed_top_threshold, speed_min_threshold,
-                              window_size)) {
+                              distance_threshold, time_threshold,
+                              angle_variance_threshold, speed_top_threshold,
+                              speed_min_threshold, window_size)) {
         cluster_t new_cluster = merge_clusters((*clusters)[i], (*clusters)[j]);
         add_cluster_and_remove_old_ones(clusters, cluster_len, new_cluster, i,
                                         j);
@@ -199,7 +199,7 @@ uint8_t find_compatible_clusters(double **data, size_t height,
 }
 
 uint8_t check_compatibility(double **data, cluster_t first, cluster_t second,
-                            double distance_threshold,
+                            double distance_threshold, double time_threshold,
                             double angle_variance_threshold,
                             double speed_top_threshold,
                             double speed_min_threshold, size_t window_size) {
@@ -210,10 +210,13 @@ uint8_t check_compatibility(double **data, cluster_t first, cluster_t second,
   double speed = calc_speed(first_cluster_last_element,
                             second_cluster_first_element, distance);
   double angle_variance = calc_angle_variance(data, first, second, window_size);
+  double time_diff =
+      second_cluster_first_element[EPOCH] - first_cluster_last_element[EPOCH];
 
   return distance < distance_threshold &&
          angle_variance < angle_variance_threshold &&
-         speed < speed_top_threshold && speed > speed_min_threshold;
+         speed < speed_top_threshold && speed > speed_min_threshold &&
+         time_diff < time_threshold;
 }
 
 cluster_t *create_base_array(size_t len) {

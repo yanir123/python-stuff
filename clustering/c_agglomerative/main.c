@@ -400,30 +400,13 @@ double data[HEIGHT][WIDTH] = {
     {5.58743574e-01, 5.93711954e-01, 2.48026500e+02, 1.67164259e+09},
     {5.58749864e-01, 5.93713840e-01, 2.37906000e+02, 1.67164260e+09}};
 
-int gettimeofday(struct timeval* tp, struct timezone* tzp) {
-  // Note: some broken versions only have 8 trailing zero's, the correct epoch
-  // has 9 trailing zero's This magic number is the number of 100 nanosecond
-  // intervals since January 1, 1601 (UTC) until 00:00:00 January 1, 1970
-  static const uint64_t EPOCH = ((uint64_t)116444736000000000ULL);
-
-  SYSTEMTIME system_time;
-  FILETIME file_time;
-  uint64_t time;
-
-  GetSystemTime(&system_time);
-  SystemTimeToFileTime(&system_time, &file_time);
-  time = ((uint64_t)file_time.dwLowDateTime);
-  time += ((uint64_t)file_time.dwHighDateTime) << 32;
-
-  tp->tv_sec = (long)((time - EPOCH) / 10000000L);
-  tp->tv_usec = (long)(system_time.wMilliseconds * 1000);
-  return 0;
-}
-
 #include "agglomerative.h"
 
 int main(int argc, char** argv, char** wenv) {
-  struct timeval start, end;
+  LARGE_INTEGER frequency;
+  LARGE_INTEGER start;
+  LARGE_INTEGER end;
+  double interval;
 
   double* data_pointer[HEIGHT] = {0};
 
@@ -432,16 +415,18 @@ int main(int argc, char** argv, char** wenv) {
     data_pointer[i] = ((double*)(data)) + i * WIDTH;
   }
 
-  gettimeofday(&start, 0);
-  int* clusters = agglomerative_clustering_single(data_pointer, HEIGHT, 200,
-                                                  2500, 10, 0, 3);
-  gettimeofday(&end, 0);
+  QueryPerformanceFrequency(&frequency);
+  QueryPerformanceCounter(&start);
+  int* clusters = agglomerative_clustering(data_pointer, HEIGHT, 200, 100000,
+                                           2500, 10, 0, 3);
+  QueryPerformanceCounter(&end);
 
   print_array_res(clusters, HEIGHT);
 
   free(clusters);
 
-  printf("executed in :%.20f microseconds\n", end.tv_usec - start.tv_usec);
+  printf("executed in :%.20f seconds\n",
+         (double)(end.QuadPart - start.QuadPart) / frequency.QuadPart);
 
   return 0;
 }

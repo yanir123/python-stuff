@@ -33,12 +33,11 @@ typedef struct cluster_s {
 /// relation to the angle variance
 /// @return array containing cluster ids correlated to the indexes of the `data`
 /// parameter
-int* agglomerative_clustering_single(double** data, size_t height,
-                                     double distance_threshold,
-                                     double angle_variance_threshold,
-                                     double speed_top_threshold,
-                                     double speed_min_threshold,
-                                     size_t window_size);
+int* agglomerative_clustering(double** data, size_t height,
+                              double distance_threshold, double time_threshold,
+                              double angle_variance_threshold,
+                              double speed_top_threshold,
+                              double speed_min_threshold, size_t window_size);
 
 /// @brief calculate the distance between two data points using the haversine
 /// formula
@@ -124,6 +123,7 @@ int* arange(size_t len);
 /// @return boolean value indicating if the was a change
 uint8_t find_compatible_clusters(double** data, size_t height,
                                  double distance_threshold,
+                                 double time_threshold,
                                  double angle_variance_threshold,
                                  double speed_top_threshold,
                                  double speed_min_threshold, size_t window_size,
@@ -163,7 +163,7 @@ void print_array(double* arr, size_t len);
 /// relation to the angle variance
 /// @return boolean value indicating if the clusters are compatible
 uint8_t check_compatibility(double** data, cluster_t first, cluster_t second,
-                            double distance_threshold,
+                            double distance_threshold, double time_threshold,
                             double angle_variance_threshold,
                             double speed_top_threshold,
                             double speed_min_threshold, size_t window_size);
