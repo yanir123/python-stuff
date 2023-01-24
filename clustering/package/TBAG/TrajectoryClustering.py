@@ -1,7 +1,8 @@
-import datetime as dt
 import numpy as np
 import pandas as pd
+import sys
 import ctypes
+import os
 from numpy import ctypeslib as npct
 
 
@@ -38,8 +39,8 @@ class TBAG(object):
         """
         try:
             self.c_trajectory_clustering_function = npct.load_library(
-                r'trajectory_clustering.dll',
-                r'C:\Users\Ofek\Documents\python-stuff\clustering\TBAG\lib'  # TODO: change to relative path
+                'trajectory_clustering',
+                os.path.dirname(sys.modules['TBAG'].__file__)
             ).agglomerative_clustering
         except OSError:
             raise OSError(

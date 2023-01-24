@@ -1,4 +1,7 @@
+#if defined(WIN32) || defined(_WIN32) || \
+    defined(__WIN32) && !defined(__CYGWIN__)
 #include <Windows.h>
+#endif
 #include <stdint.h>
 #include <time.h>
 
@@ -403,11 +406,6 @@ double data[HEIGHT][WIDTH] = {
 #include "agglomerative.h"
 
 int main(int argc, char** argv, char** wenv) {
-  LARGE_INTEGER frequency;
-  LARGE_INTEGER start;
-  LARGE_INTEGER end;
-  double interval;
-
   double* data_pointer[HEIGHT] = {0};
   int res[HEIGHT];
 
@@ -416,16 +414,26 @@ int main(int argc, char** argv, char** wenv) {
     data_pointer[i] = ((double*)(data)) + i * WIDTH;
   }
 
+#if defined(WIN32) || defined(_WIN32) || \
+    defined(__WIN32) && !defined(__CYGWIN__)
+  LARGE_INTEGER frequency;
+  LARGE_INTEGER start;
+  LARGE_INTEGER end;
+  double interval;
+
   QueryPerformanceFrequency(&frequency);
   QueryPerformanceCounter(&start);
   agglomerative_clustering(data_pointer, HEIGHT, 100, INFINITY, 3000, 300, 0, 4,
                            res);
   QueryPerformanceCounter(&end);
 
-  print_array_res(res, HEIGHT);
-
   printf("executed in :%.20f seconds\n",
          (double)(end.QuadPart - start.QuadPart) / frequency.QuadPart);
+#else
+  agglomerative_clustering(data_pointer, HEIGHT, 100, INFINITY, 3000, 300, 0, 4,
+                           res);
+#endif
+  print_array_res(res, HEIGHT);
 
   return 0;
 }

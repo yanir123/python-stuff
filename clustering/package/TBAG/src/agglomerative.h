@@ -2,7 +2,7 @@
 
 #include <malloc.h>
 #include <math.h>
-#include <omp.h>
+// #include <omp.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,6 +10,7 @@
 #define R 6371000
 #define FALSE 0
 #define TRUE !FALSE
+#define PI 3.14159265359
 
 enum columns { LAT, LON, ALT, EPOCH };
 

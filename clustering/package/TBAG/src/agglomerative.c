@@ -64,7 +64,7 @@ double calc_speed(double *first, double *second, double distance) {
 
 double angle_degree(double first_x, double first_y, double second_x,
                     double second_y) {
-  return atan2(second_y - first_y, second_x - first_x) * 180 / M_PI;
+  return atan2(second_y - first_y, second_x - first_x) * 180 / PI;
 }
 
 double calc_angle_variance(double **data, cluster_t first, cluster_t second,
@@ -76,7 +76,6 @@ double calc_angle_variance(double **data, cluster_t first, cluster_t second,
 
   double *angles = (double *)malloc(sizeof(double) * (angles_number));
 
-#pragma omp parallel for
   for (size_t i = first.len - first_angle_window; i < first_angle_window - 1;
        i++) {
     angles[i - (first.len - first_angle_window)] = angle_degree(
@@ -89,7 +88,6 @@ double calc_angle_variance(double **data, cluster_t first, cluster_t second,
                    data[first.indices[first.len - 1]][LAT],
                    data[second.indices[0]][LON], data[second.indices[0]][LAT]);
 
-#pragma omp parallel for
   for (size_t i = 0; i < second_angle_window - 1; i++) {
     angles[i + first_angle_window] = angle_degree(
         data[second.indices[i]][LON], data[second.indices[i]][LAT],
@@ -97,7 +95,6 @@ double calc_angle_variance(double **data, cluster_t first, cluster_t second,
   }
 
   double sum = 0;
-#pragma omp parallel for shared(angles)
   for (size_t i = 0; i < angles_number; i++) {
     sum += angles[i];
   }
@@ -105,7 +102,6 @@ double calc_angle_variance(double **data, cluster_t first, cluster_t second,
   double mean = sum / angles_number;
 
   double sqDiff = 0;
-#pragma omp parallel for shared(angles, mean)
   for (size_t i = 0; i < angles_number; i++) {
     sqDiff += pow(angles[i] - mean, 2);
   }
@@ -118,12 +114,10 @@ double calc_angle_variance(double **data, cluster_t first, cluster_t second,
 cluster_t merge_clusters(cluster_t first, cluster_t second) {
   int *temp = (int *)malloc(sizeof(int) * (first.len + second.len));
 
-#pragma omp parallel for
   for (size_t i = 0; i < first.len; i++) {
     temp[i] = first.indices[i];
   }
 
-#pragma omp parallel for
   for (size_t i = 0; i < second.len; i++) {
     temp[i + first.len] = second.indices[i];
   }
@@ -136,7 +130,6 @@ cluster_t merge_clusters(cluster_t first, cluster_t second) {
 int *arange(size_t len) {
   int *arr = (int *)malloc(sizeof(int) * len);
 
-#pragma omp parallel for shared(arr)
   for (size_t i = 0; i < len; i++) {
     arr[i] = i;
   }
@@ -243,7 +236,6 @@ uint8_t check_compatibility(double **data, cluster_t first, cluster_t second,
 cluster_t *create_base_array(size_t len) {
   cluster_t *clusters = (cluster_t *)malloc(sizeof(cluster_t) * len);
 
-#pragma omp parallel for shared(clusters)
   for (size_t i = 0; i < len; i++) {
     clusters[i].len = 1;
     clusters[i].indices = (int *)malloc(sizeof(int) * 1);
@@ -254,7 +246,6 @@ cluster_t *create_base_array(size_t len) {
 }
 
 void free_all_clusters(cluster_t *clusters, size_t len) {
-#pragma omp parallel for shared(clusters)
   for (size_t i = 0; i < len; i++) {
     free(clusters[i].indices);
   }
@@ -265,7 +256,6 @@ void free_all_clusters(cluster_t *clusters, size_t len) {
 void get_cluster_array_with_origininal_indices(cluster_t *clusters, size_t len,
                                                size_t number_of_points,
                                                int *res) {
-#pragma omp parallel for shared(clusters, cluster_ids) collapse(2)
   for (size_t i = 0; i < len; i++) {
     for (size_t j = 0; j < clusters[i].len; j++) {
       res[clusters[i].indices[j]] = i;
