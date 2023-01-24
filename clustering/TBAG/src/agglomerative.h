@@ -14,7 +14,6 @@
 enum columns { LAT, LON, ALT, EPOCH };
 
 typedef struct cluster_s {
-  int cluster_id;
   size_t len;
   int* indices;
 } cluster_t;
@@ -25,19 +24,20 @@ typedef struct cluster_s {
 /// @param height number of data points
 /// @param distance_threshold maximum distance between last point od one cluster
 /// and first point of second cluster
+/// @param time_threshold maximum time diff allowed between points
 /// @param angle_variance_threshold maximum variance between the `window_size`
 /// elements of two clusters
 /// @param speed_top_threshold maximum speed between two clusters
 /// @param speed_min_threshold minimum speed between two clusters
 /// @param window_size number of elements to check back in the cluster in
 /// relation to the angle variance
-/// @return array containing cluster ids correlated to the indexes of the `data`
-/// parameter
-int* agglomerative_clustering(double** data, size_t height,
+/// @param res result array
+void agglomerative_clustering(double** data, size_t height,
                               double distance_threshold, double time_threshold,
                               double angle_variance_threshold,
                               double speed_top_threshold,
-                              double speed_min_threshold, size_t window_size);
+                              double speed_min_threshold, size_t window_size,
+                              int* res);
 
 /// @brief calculate the distance between two data points using the haversine
 /// formula
@@ -112,6 +112,7 @@ int* arange(size_t len);
 /// @param height number of data points
 /// @param distance_threshold maximum distance between last point od one cluster
 /// and first point of second cluster
+/// @param time_threshold maximum time diff allowed between points
 /// @param angle_variance_threshold maximum variance between the `window_size`
 /// elements of two clusters
 /// @param speed_top_threshold maximum speed between two clusters
@@ -134,9 +135,9 @@ uint8_t find_compatible_clusters(double** data, size_t height,
 /// @param clusters array of clusters
 /// @param len number of clusters in the array
 /// @param number_of_points number of points in the original array
-/// @return new array with the clusterid
-int* get_cluster_array_with_origininal_indices(cluster_t* clusters, size_t len,
-                                               size_t number_of_points);
+void get_cluster_array_with_origininal_indices(cluster_t* clusters, size_t len,
+                                               size_t number_of_points,
+                                               int* res);
 
 /// @brief Function to create array of clusters of given length where every
 /// element is its own cluster
@@ -155,6 +156,7 @@ void print_array(double* arr, size_t len);
 /// @param second second cluster
 /// @param distance_threshold maximum distance between last point od one cluster
 /// and first point of second cluster
+/// @param time_threshold maximum time diff allowed between points
 /// @param angle_variance_threshold maximum variance between the `window_size`
 /// elements of two clusters
 /// @param speed_top_threshold maximum speed between two clusters
@@ -172,3 +174,4 @@ uint8_t check_compatibility(double** data, cluster_t first, cluster_t second,
 /// @param clusters cluster array to free
 /// @param len length of cluster array to free
 void free_all_clusters(cluster_t* clusters, size_t len);
+double cluster_distance(double** data, cluster_t first, cluster_t second);
