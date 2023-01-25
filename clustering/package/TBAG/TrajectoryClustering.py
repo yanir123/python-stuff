@@ -39,9 +39,9 @@ class TBAG(object):
         """
         try:
             self.c_trajectory_clustering_function = npct.load_library(
-                'trajectory_clustering',
-                os.path.dirname(sys.modules['TBAG'].__file__)
-            ).agglomerative_clustering
+                'lib/trajectory_clustering',
+                os.path.dirname(
+                    sys.modules['TBAG'].__file__)).agglomerative_clustering
         except OSError:
             raise OSError(
                 'Unable to locate the library. please contact sharoni(הגאון מהטכניון)'
@@ -68,7 +68,7 @@ class TBAG(object):
         self.window = ctypes.c_size_t(window)
 
     def fit(self,
-            data: np.ndarray | pd.DataFrame,
+            data: pd.DataFrame,
             lat_col: str = 'lat',
             lon_col: str = 'lon',
             alt_col: str = 'alt',
@@ -129,7 +129,7 @@ class TBAG(object):
         return res
 
     def fit_predict(self,
-                    data: np.ndarray | pd.DataFrame,
+                    data: pd.DataFrame,
                     lat_col: str = 'lat',
                     lon_col: str = 'lon',
                     alt_col: str = 'alt',
@@ -164,8 +164,8 @@ class TBAG(object):
         return self.predict()
 
     @staticmethod
-    def check_params(data: np.ndarray | pd.DataFrame, lat_col: str,
-                     lon_col: str, alt_col: str, timestamp_col: str):
+    def check_params(data: pd.DataFrame, lat_col: str, lon_col: str,
+                     alt_col: str, timestamp_col: str):
         """Function to check if parameters are valid
 
         Parameters

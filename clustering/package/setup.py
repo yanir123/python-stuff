@@ -13,11 +13,11 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     packages=setuptools.find_packages(),
     include_package_data=True,
-    package_data={'TBAG': ['lib/trajectory_clustering.so']},
+    package_data={'TBAG': ['lib/trajectory_clustering.dll']},
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
+        "Operating System :: Windows",
     ],
-    python_requires='>=3.11',
+    python_requires='>=3.10',
 )
