@@ -16,7 +16,7 @@ enum columns { LAT, LON, ALT, EPOCH };
 
 typedef struct cluster_s {
   size_t len;
-  int* indices;
+  size_t* indices;
 } cluster_t;
 
 /// @brief Function to cluster data points with respect to the location, speed,
@@ -84,7 +84,7 @@ double calc_speed(double* first, double* second, double distance);
 /// @param second second cluster
 /// @param window_size window frame to calc variance on
 /// @return the variance between the two clusters
-double calc_angle_variance(double** data, cluster_t first, cluster_t second,
+double calc_angle_variance(double** data, cluster_t first, size_t second,
                            size_t window_size);
 
 /// @brief calculate the angle between two points
@@ -165,7 +165,7 @@ void print_array(double* arr, size_t len);
 /// @param window_size number of elements to check back in the cluster in
 /// relation to the angle variance
 /// @return boolean value indicating if the clusters are compatible
-uint8_t check_compatibility(double** data, cluster_t first, cluster_t second,
+uint8_t check_compatibility(double** data, cluster_t first, size_t second,
                             double distance_threshold, double time_threshold,
                             double angle_variance_threshold,
                             double speed_top_threshold,
@@ -175,4 +175,22 @@ uint8_t check_compatibility(double** data, cluster_t first, cluster_t second,
 /// @param clusters cluster array to free
 /// @param len length of cluster array to free
 void free_all_clusters(cluster_t* clusters, size_t len);
-double cluster_distance(double** data, cluster_t first, cluster_t second);
+
+/// @brief Function will check the distance between two clusters
+/// @param data
+/// @param first
+/// @param second
+/// @return
+double cluster_distance(double** data, cluster_t first, size_t second);
+
+void add_new_cluster(cluster_t** clusters_array, size_t* cluster_len,
+                     size_t index);
+
+void add_to_cluster(cluster_t* clusters_array, size_t cluster_index,
+                    size_t index);
+
+int find_closest_compatible_cluster(
+    double** data, size_t height, cluster_t* clusters_array, size_t cluster_len,
+    size_t index, double distance_threshold, double time_threshold,
+    double angle_variance_threshold, double speed_top_threshold,
+    double speed_min_threshold, size_t window_size);
