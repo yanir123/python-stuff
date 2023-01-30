@@ -19,7 +19,7 @@ typedef struct cluster_s {
   size_t* indices;
 } cluster_t;
 
-/// @brief Function to cluster data points with respect to the location, speed,
+/// @brief cluster data points with respect to the location, speed,
 /// and direction of trajectories
 /// @param data array of points
 /// @param height number of data points
@@ -57,11 +57,6 @@ void add_cluster_and_remove_old_ones(cluster_t** clusters, size_t* len,
                                      cluster_t new_cluster, size_t first_index,
                                      size_t second_index);
 
-/// @brief print and array of datapoints
-/// @param arr array to print
-/// @param len length of the array
-void print_array(double* arr, size_t len);
-
 /// @brief free cluster indices
 /// @param cluster cluster to free
 void free_cluster(cluster_t cluster);
@@ -96,43 +91,7 @@ double calc_angle_variance(double** data, cluster_t first, size_t second,
 double angle_degree(double first_x, double first_y, double second_x,
                     double second_y);
 
-/// @brief merge two clusters
-/// @param first first cluster to merge
-/// @param second second cluster to merge
-/// @return the new cluster combining both `first` and `second`
-cluster_t merge_clusters(cluster_t first, cluster_t second);
-
-/// @brief create array on given size and fill it with values correlated to it's
-/// index
-/// @param len length of array to create
-/// @return the new array
-int* arange(size_t len);
-
-/// @brief Function to find cluster pairs that are valid to the given thresholds
-/// @param data array of points
-/// @param height number of data points
-/// @param distance_threshold maximum distance between last point od one cluster
-/// and first point of second cluster
-/// @param time_threshold maximum time diff allowed between points
-/// @param angle_variance_threshold maximum variance between the `window_size`
-/// elements of two clusters
-/// @param speed_top_threshold maximum speed between two clusters
-/// @param speed_min_threshold minimum speed between two clusters
-/// @param window_size number of elements to check back in the cluster in
-/// relation to the angle variance
-/// @param clusters pointer to the cluster array
-/// @param cluster_len pointer to the cluster length
-/// @return boolean value indicating if the was a change
-uint8_t find_compatible_clusters(double** data, size_t height,
-                                 double distance_threshold,
-                                 double time_threshold,
-                                 double angle_variance_threshold,
-                                 double speed_top_threshold,
-                                 double speed_min_threshold, size_t window_size,
-                                 cluster_t** clusters, size_t* cluster_len);
-
-/// @brief Function to raorganize the cluster array to a valid clusterid per
-/// index
+/// @brief raorganize the cluster array to a valid clusterid per index
 /// @param clusters array of clusters
 /// @param len number of clusters in the array
 /// @param number_of_points number of points in the original array
@@ -140,18 +99,7 @@ void get_cluster_array_with_origininal_indices(cluster_t* clusters, size_t len,
                                                size_t number_of_points,
                                                int* res);
 
-/// @brief Function to create array of clusters of given length where every
-/// element is its own cluster
-/// @param len length of the cluster (number of initial data points)
-/// @return
-cluster_t* create_base_array(size_t len);
-
-/// @brief Function to print the array
-/// @param arr array to print
-/// @param len length of the array
-void print_array(double* arr, size_t len);
-
-/// @brief Function to check if two clusters are compatible
+/// @brief check if two clusters are compatible
 /// @param data array of points
 /// @param first first cluster
 /// @param second second cluster
@@ -171,24 +119,48 @@ uint8_t check_compatibility(double** data, cluster_t first, size_t second,
                             double speed_top_threshold,
                             double speed_min_threshold, size_t window_size);
 
-/// @brief Function to free all clusters
+/// @brief free all clusters
 /// @param clusters cluster array to free
 /// @param len length of cluster array to free
 void free_all_clusters(cluster_t* clusters, size_t len);
 
-/// @brief Function will check the distance between two clusters
+/// @brief check the distance between two clusters
 /// @param data
 /// @param first
 /// @param second
 /// @return
 double cluster_distance(double** data, cluster_t first, size_t second);
 
+/// @brief add new cluster to the cluster array
+/// @param clusters_array pointer to the cluster of existing arrays
+/// @param cluster_len pointer to the length of the current cluster array
+/// @param index index of the element that will be added as a new cluster
 void add_new_cluster(cluster_t** clusters_array, size_t* cluster_len,
                      size_t index);
 
+/// @brief add new element to existing cluster
+/// @param clusters_array array of existing clusters
+/// @param cluster_index index of cluster to add element to
+/// @param index element to add to cluster
 void add_to_cluster(cluster_t* clusters_array, size_t cluster_index,
                     size_t index);
 
+/// @brief find the closest cluster that is valid according to the user defined
+/// thresholds
+/// @param data the datapoints
+/// @param height the number of datapoints in data
+/// @param clusters_array array of existing clusters
+/// @param cluster_len number of existing clusters
+/// @param index index of the element to find compatibbility with
+/// @param distance_threshold maximum distance between cluster and new element
+/// @param time_threshold maximum time gap between cluster and new element
+/// @param angle_variance_threshold maximum angle variance between cluster and
+/// new element
+/// @param speed_top_threshold maximum speed between cluster and new element
+/// @param speed_min_threshold minimum speed between cluster and new element
+/// @param window_size number of elements from the end of the cluster to refer
+/// to
+/// @return the index of the most compatible cluster, -1 if none are compatible
 int find_closest_compatible_cluster(
     double** data, size_t height, cluster_t* clusters_array, size_t cluster_len,
     size_t index, double distance_threshold, double time_threshold,

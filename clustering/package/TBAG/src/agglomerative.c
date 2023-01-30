@@ -1,19 +1,5 @@
 #include "agglomerative.h"
 
-void print_array(double *arr, size_t len) {
-  printf("{");
-
-  for (size_t i = 0; i < len; i++) {
-    printf("%f", arr[i]);
-
-    if (i + 1 != len) {
-      printf(", ");
-    }
-  }
-
-  printf("}\n");
-}
-
 void agglomerative_clustering(double **data, size_t height,
                               double distance_threshold, double time_threshold,
                               double angle_variance_threshold,
@@ -105,16 +91,6 @@ double calc_angle_variance(double **data, cluster_t first, size_t second,
   return sqDiff / first_angle_window;
 }
 
-int *arange(size_t len) {
-  int *arr = (int *)malloc(sizeof(int) * len);
-
-  for (size_t i = 0; i < len; i++) {
-    arr[i] = i;
-  }
-
-  return arr;
-}
-
 void free_cluster(cluster_t cluster) { free(cluster.indices); }
 
 void add_cluster_and_remove_old_ones(cluster_t **clusters, size_t *len,
@@ -125,7 +101,6 @@ void add_cluster_and_remove_old_ones(cluster_t **clusters, size_t *len,
   size_t smaller_index = fmin(first_index, second_index);
   size_t bigger_index = fmax(first_index, second_index);
 
-#pragma omp parallel for
   for (size_t i = 0; i < bigger_index; i++) {
     if (i == smaller_index) {
       new_clusters[i] = new_cluster;
@@ -134,7 +109,6 @@ void add_cluster_and_remove_old_ones(cluster_t **clusters, size_t *len,
     }
   }
 
-#pragma omp parallel for
   for (size_t i = bigger_index; i < (*len) - 1; i++) {
     new_clusters[i] = (*clusters)[i + 1];
   }
@@ -166,25 +140,10 @@ uint8_t check_compatibility(double **data, cluster_t first, size_t second,
   double time_diff =
       fabs(second_element[EPOCH] - first_cluster_last_element[EPOCH]);
 
-  // printf("distance: %f, speed: %f, angle var: %f\n", distance, speed,
-  //        angle_variance);
-
   return distance < distance_threshold &&
          angle_variance < angle_variance_threshold &&
          speed < speed_top_threshold && speed > speed_min_threshold &&
          time_diff < time_threshold;
-}
-
-cluster_t *create_base_array(size_t len) {
-  cluster_t *clusters = (cluster_t *)malloc(sizeof(cluster_t) * len);
-
-  for (size_t i = 0; i < len; i++) {
-    clusters[i].len = 1;
-    clusters[i].indices = (size_t *)malloc(sizeof(size_t) * 1);
-    clusters[i].indices[0] = i;
-  }
-
-  return clusters;
 }
 
 void free_all_clusters(cluster_t *clusters, size_t len) {
@@ -251,7 +210,7 @@ int find_closest_compatible_cluster(
 
   for (size_t i = 0; i < cluster_len; i++) {
     double distance = cluster_distance(data, clusters_array[i], index);
-    // printf("plot %lld and cluster %lld: %f\n", index, i, distance);
+
     if (distance < min_value &&
         check_compatibility(data, clusters_array[i], index, distance_threshold,
                             time_threshold, angle_variance_threshold,
