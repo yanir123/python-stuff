@@ -8,6 +8,7 @@ void agglomerative_clustering(double **data, size_t height,
                               int *res) {
   cluster_t *clusters_array = (cluster_t *)malloc(0);
   size_t cluster_len = 0;
+
   for (size_t i = 0; i < height; i++) {
     int cluster_loc = find_closest_compatible_cluster(
         data, height, clusters_array, cluster_len, i, distance_threshold,

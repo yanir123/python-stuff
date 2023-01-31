@@ -19,7 +19,7 @@ for example:
 
 ### Not yet supported versions or environments
 
-If your operating system of python version does not have a corresponding `.whl` file please contact `×¢×•××¨ ××¨ ×”×“×¨`.
+If your operating system of python version does not have a corresponding `.whl` file please contact `òåîø àø äãø`.
 
 ### Currently supported versions
 
