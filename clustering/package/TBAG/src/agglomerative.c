@@ -62,15 +62,16 @@ double calc_angle_diff(double **data, cluster_t first, unsigned int second,
   unsigned int first_angle_window =
       window_size > first.len ? first.len : window_size;
 
-  double general_degree = angle_degree(
-      data[first.indices[first.len - first_angle_window]][LON],
-      data[first.indices[first.len - first_angle_window]][LAT],
-      data[first.indices[first.len]][LON], data[first.indices[first.len]][LAT]);
+  double general_degree =
+      angle_degree(data[first.indices[first.len - first_angle_window]][LON],
+                   data[first.indices[first.len - first_angle_window]][LAT],
+                   data[first.indices[first.len - 1]][LON],
+                   data[first.indices[first.len - 1]][LAT]);
 
-  double new_degree = angle_degree(
-      data[first.indices[first.len - first_angle_window]][LON],
-      data[first.indices[first.len - first_angle_window]][LAT],
-      data[first.indices[second]][LON], data[first.indices[second]][LAT]);
+  double new_degree =
+      angle_degree(data[first.indices[first.len - first_angle_window]][LON],
+                   data[first.indices[first.len - first_angle_window]][LAT],
+                   data[second][LON], data[second][LAT]);
 
   return fabs(general_degree - new_degree);
 }

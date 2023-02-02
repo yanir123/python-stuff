@@ -10,7 +10,7 @@ class TBAG(object):
 
     def __init__(self,
                  eps: float = 200,
-                 alpha: float = 2500,
+                 alpha: float = 10,
                  time_eps: float = np.inf,
                  max_speed: float = 300,
                  min_speed: float = 100,
@@ -22,7 +22,7 @@ class TBAG(object):
         eps : float, optional
             maximum distance in `meters` between the end of one cluster and the start of another, by default 200
         alpha : float, optional
-            maximum variance in the azimuth between the `window` last points and the `window` first points in the combining clusters, by default 2500
+            maximum degree between the `window` last points and the `window` first points in the combining clusters, by default 10
         time_eps : float, optional
             maximum time diferrence when the first cluster ends and the second starts, by default np.inf
         max_speed : float, optional
@@ -54,9 +54,9 @@ class TBAG(object):
                                                 ndim=1,
                                                 flags='CONTIGUOUS')
         self.c_trajectory_clustering_function.argtypes = [
-            self.array_2d_double_type, ctypes.c_size_t, ctypes.c_double,
+            self.array_2d_double_type, ctypes.c_uint32, ctypes.c_double,
             ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double,
-            ctypes.c_size_t, self.array_1d_int_type
+            ctypes.c_uint32, self.array_1d_int_type
         ]
         self.c_trajectory_clustering_function.restype = None
 
@@ -65,7 +65,7 @@ class TBAG(object):
         self.time_eps = ctypes.c_double(time_eps)
         self.max_speed = ctypes.c_double(max_speed)
         self.min_speed = ctypes.c_double(min_speed)
-        self.window = ctypes.c_size_t(window)
+        self.window = ctypes.c_uint32(window)
 
     def fit(self,
             data: pd.DataFrame,
@@ -109,7 +109,7 @@ class TBAG(object):
             self.data.__array_interface__['data'][0] +
             np.arange(self.data.shape[0]) * self.data.strides[0]).astype(
                 np.uintp)
-        self.c_len = ctypes.c_size_t(self.len)
+        self.c_len = ctypes.c_uint32(self.len)
 
     def predict(self) -> np.array:
         """Function to cluster the values into groups
