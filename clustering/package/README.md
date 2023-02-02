@@ -19,7 +19,7 @@ for example:
 
 ### Not yet supported versions or environments
 
-If your operating system of python version does not have a corresponding `.whl` file please contact `���� �� ���`.
+If your operating system of python version does not have a corresponding `.whl` file please contact `���� �� ���`.
 
 ### Currently supported versions
 
@@ -44,7 +44,7 @@ The model constructor has several parameters with default values:
 
 ```
 eps: float - maximum distance between clusters default=200,
-alpha: float - maximum angle variance between clusters default=2500,
+alpha: float - maximum angle difference between clusters default=10,
 time_eps: float - maximum time difference between clusters default=np.inf,
 max_speed: float - maximum speed default=300,
 min_speed: float - minmum speed dafult=100,
@@ -78,3 +78,62 @@ Finally we can predict the clusters and get our result:
 Note, this can be shortend using the `fit_predict` method like this:
 
 `res = model.fit_predict(plots, lat_col='Lat', lon_col='Lon', alt_col='Alt', timestamp_col='epoch')`
+
+## Build from source
+
+If you are in DE_Inferno or if you have `Celiac disease` and you want to Upgrade/Rebuild the package you can use the following steps:
+
+### Build form `C` code
+
+First navigate to the `C` code directory in:
+
+```
+package
+└───build
+└───dist
+└───TBAG
+|   └───lib
+|   └───src
+|   |   |
+|   |   |   agglomerative.c
+|   |   |   agglomerative.h
+|   |   |   main.c
+|   |   __init__.py
+|   |   TrajectoryClustering.py
+└───TBAG.egg-info
+|   
+│   README.md
+│   setup.py    
+```
+
+And then run the comman:
+
+Windows: 
+
+`gcc -O3 -shared agglomerative.c -o ..\lib\trajectory_clustering.dll`
+
+or for Linux:
+
+`gcc -O3 -shared agglomerative.c -o ..\lib\trajectory_clustering.so`
+
+### Build `whl` file
+
+After building the library you can go back to the package dir and build the whl file.
+
+But before that please make sure that the python version in the `setup.py` file, for example:
+
+`python_requires='>=3.11'`
+
+Then we can run the command:
+
+`python -m build --wheel`
+
+Please make sure that you are using the right python version when building the distribution.
+
+Your new whl file will be ready in the dist directory.
+
+I hope you enjoy this library like I suffered writing this readme :).
+
+### Author's note
+
+A special thank you to `Kobi Swisa` A.K.A `KS Hamutag`. 

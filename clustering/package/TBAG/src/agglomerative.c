@@ -3,8 +3,7 @@
 void agglomerative_clustering(double **data, unsigned int height,
                               double distance_threshold, double time_threshold,
                               double angle_diff_threshold,
-                              double speed_top_threshold,
-                              double speed_min_threshold,
+                              double speed_diff_threshold,
                               unsigned int window_size, int *res) {
   cluster_t *clusters_array = (cluster_t *)malloc(0);
   unsigned int cluster_len = 0;
@@ -12,8 +11,8 @@ void agglomerative_clustering(double **data, unsigned int height,
   for (unsigned int i = 0; i < height; i++) {
     int cluster_loc = find_closest_compatible_cluster(
         data, height, clusters_array, cluster_len, i, distance_threshold,
-        time_threshold, angle_diff_threshold, speed_top_threshold,
-        speed_min_threshold, window_size);
+        time_threshold, angle_diff_threshold, speed_diff_threshold,
+        window_size);
     if (cluster_loc != -1) {
       add_to_cluster(clusters_array, (unsigned int)cluster_loc, i);
     } else {
@@ -48,63 +47,44 @@ double haversine_distance(double *first, double *second) {
   return sqrt(pow(R * c, 2) + pow(second[ALT] - first[ALT], 2));
 }
 
-double calc_speed(double *first, double *second, double distance) {
-  return distance / (second[EPOCH] - first[EPOCH]);
+double calc_speed(double *first, double *second) {
+  double time_diff = (second[EPOCH] - first[EPOCH]);
+
+  if (time_diff == 0) {
+    return 0;
+  }
+
+  return haversine_distance(first, second) / time_diff;
 }
 
-double angle_degree(double first_x, double first_y, double second_x,
-                    double second_y) {
-  return atan2(second_y - first_y, second_x - first_x) * 180 / PI;
+double angle_degree(double *first, double *second) {
+  return atan2(second[LAT] - first[LAT], second[LON] - first[LON]) * 180 / PI;
+}
+
+double calc_speed_diff(double **data, cluster_t first, unsigned int second,
+                       unsigned int window_size) {
+  return calc_diff(data, first, second, window_size, calc_speed);
 }
 
 double calc_angle_diff(double **data, cluster_t first, unsigned int second,
                        unsigned int window_size) {
+  return calc_diff(data, first, second, window_size, angle_degree);
+}
+
+double calc_diff(double **data, cluster_t first, unsigned int second,
+                 unsigned int window_size,
+                 double (*diff_func)(double *, double *)) {
   unsigned int first_angle_window =
       window_size > first.len ? first.len : window_size;
 
-  double general_degree =
-      angle_degree(data[first.indices[first.len - first_angle_window]][LON],
-                   data[first.indices[first.len - first_angle_window]][LAT],
-                   data[first.indices[first.len - 1]][LON],
-                   data[first.indices[first.len - 1]][LAT]);
+  double general_diff =
+      diff_func(data[first.indices[first.len - first_angle_window]],
+                data[first.indices[first.len - 1]]);
 
-  double new_degree =
-      angle_degree(data[first.indices[first.len - first_angle_window]][LON],
-                   data[first.indices[first.len - first_angle_window]][LAT],
-                   data[second][LON], data[second][LAT]);
+  double new_diff = diff_func(
+      data[first.indices[first.len - first_angle_window]], data[second]);
 
-  return fabs(general_degree - new_degree);
-}
-
-void free_cluster(cluster_t cluster) { free(cluster.indices); }
-
-void add_cluster_and_remove_old_ones(cluster_t **clusters, unsigned int *len,
-                                     cluster_t new_cluster,
-                                     unsigned int first_index,
-                                     unsigned int second_index) {
-  cluster_t *new_clusters =
-      (cluster_t *)malloc(sizeof(cluster_t) * ((*len) - 1));
-  unsigned int smaller_index = fmin(first_index, second_index);
-  unsigned int bigger_index = fmax(first_index, second_index);
-
-  for (unsigned int i = 0; i < bigger_index; i++) {
-    if (i == smaller_index) {
-      new_clusters[i] = new_cluster;
-    } else {
-      new_clusters[i] = (*clusters)[i];
-    }
-  }
-
-  for (unsigned int i = bigger_index; i < (*len) - 1; i++) {
-    new_clusters[i] = (*clusters)[i + 1];
-  }
-
-  free_cluster((*clusters)[first_index]);
-  free_cluster((*clusters)[second_index]);
-  free(*clusters);
-
-  *clusters = new_clusters;
-  (*len)--;
+  return fabs(general_diff - new_diff);
 }
 
 double cluster_distance(double **data, cluster_t first, unsigned int second) {
@@ -114,22 +94,19 @@ double cluster_distance(double **data, cluster_t first, unsigned int second) {
 uint8_t check_compatibility(double **data, cluster_t first, unsigned int second,
                             double distance_threshold, double time_threshold,
                             double angle_diff_threshold,
-                            double speed_top_threshold,
-                            double speed_min_threshold,
+                            double speed_diff_threshold,
                             unsigned int window_size) {
   double *first_cluster_last_element = data[first.indices[first.len - 1]];
   double *second_element = data[second];
   double distance =
       haversine_distance(first_cluster_last_element, second_element);
-  double speed =
-      calc_speed(first_cluster_last_element, second_element, distance);
-  double angle_variance = calc_angle_diff(data, first, second, window_size);
+  double speed_diff = calc_speed_diff(data, first, second, window_size);
+  double angle_diff = calc_angle_diff(data, first, second, window_size);
   double time_diff =
       fabs(second_element[EPOCH] - first_cluster_last_element[EPOCH]);
 
-  return distance < distance_threshold &&
-         angle_variance < angle_diff_threshold && speed < speed_top_threshold &&
-         speed > speed_min_threshold && time_diff < time_threshold;
+  return distance < distance_threshold && angle_diff < angle_diff_threshold &&
+         speed_diff < speed_diff_threshold && time_diff < time_threshold;
 }
 
 void free_all_clusters(cluster_t *clusters, unsigned int len) {
@@ -192,8 +169,7 @@ int find_closest_compatible_cluster(
     double **data, unsigned int height, cluster_t *clusters_array,
     unsigned int cluster_len, unsigned int index, double distance_threshold,
     double time_threshold, double angle_diff_threshold,
-    double speed_top_threshold, double speed_min_threshold,
-    unsigned int window_size) {
+    double speed_diff_threshold, unsigned int window_size) {
   int min_index = -1;
   double min_value = INFINITY;
 
@@ -203,8 +179,7 @@ int find_closest_compatible_cluster(
     if (distance < min_value &&
         check_compatibility(data, clusters_array[i], index, distance_threshold,
                             time_threshold, angle_diff_threshold,
-                            speed_top_threshold, speed_min_threshold,
-                            window_size)) {
+                            speed_diff_threshold, window_size)) {
       min_index = i;
       min_value = min_value;
     }
