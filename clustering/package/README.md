@@ -44,10 +44,9 @@ The model constructor has several parameters with default values:
 
 ```
 eps: float - maximum distance between clusters default=200,
-alpha: float - maximum angle difference between clusters default=10,
+alpha: float - maximum speed differnece between new point and last `window` points in cluster default=10,
 time_eps: float - maximum time difference between clusters default=np.inf,
-max_speed: float - maximum speed default=300,
-min_speed: float - minmum speed dafult=100,
+speed_eps: float - maximum speed differnece between new point and last `window` points in cluster default=300,
 window: int - number of points in cluster to calculate the alpha on default=4
 ```
 

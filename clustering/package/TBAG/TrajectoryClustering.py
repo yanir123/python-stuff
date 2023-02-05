@@ -12,8 +12,7 @@ class TBAG(object):
                  eps: float = 200,
                  alpha: float = 10,
                  time_eps: float = np.inf,
-                 max_speed: float = 300,
-                 min_speed: float = 100,
+                 speed_eps: float = 300,
                  window: int = 4) -> None:
         """Class that is used as an API to run the underlying c code
 
@@ -22,13 +21,11 @@ class TBAG(object):
         eps : float, optional
             maximum distance in `meters` between the end of one cluster and the start of another, by default 200
         alpha : float, optional
-            maximum degree between the `window` last points and the `window` first points in the combining clusters, by default 10
+            maximum degree difference between the `window` last points and the `window` first points in the combining clusters, by default 10
         time_eps : float, optional
             maximum time diferrence when the first cluster ends and the second starts, by default np.inf
-        max_speed : float, optional
-            maximum speed allowed, by default 300
-        min_speed : float, optional
-            minimum speed allowed, by default 100
+        speed_eps : float, optional
+            maximum speed difference between the `window` last points and the `window` first points in the combining clusters, by default 10
         window : int, optional
             the number of points to take from the start and end of the combining clusters, by default 4
 
@@ -55,16 +52,15 @@ class TBAG(object):
                                                 flags='CONTIGUOUS')
         self.c_trajectory_clustering_function.argtypes = [
             self.array_2d_double_type, ctypes.c_uint32, ctypes.c_double,
-            ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double,
-            ctypes.c_uint32, self.array_1d_int_type
+            ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_uint32,
+            self.array_1d_int_type
         ]
         self.c_trajectory_clustering_function.restype = None
 
         self.eps = ctypes.c_double(eps)
         self.alpha = ctypes.c_double(alpha)
         self.time_eps = ctypes.c_double(time_eps)
-        self.max_speed = ctypes.c_double(max_speed)
-        self.min_speed = ctypes.c_double(min_speed)
+        self.speed_eps = ctypes.c_double(speed_eps)
         self.window = ctypes.c_uint32(window)
 
     def fit(self,
@@ -123,8 +119,7 @@ class TBAG(object):
 
         self.c_trajectory_clustering_function(self.data, self.c_len, self.eps,
                                               self.time_eps, self.alpha,
-                                              self.max_speed, self.min_speed,
-                                              self.window, res)
+                                              self.speed_eps, self.window, res)
 
         return res
 
