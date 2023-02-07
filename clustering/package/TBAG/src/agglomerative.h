@@ -11,6 +11,7 @@
 #define FALSE 0
 #define TRUE !FALSE
 #define PI 3.14159265359
+#define WIDTH 4
 
 enum columns { LAT, LON, ALT, EPOCH };
 
@@ -93,24 +94,20 @@ void get_cluster_array_with_origininal_indices(cluster_t* clusters,
 /// @param speed_diff_threshold maximum speed difference between two clusters
 /// @param window_size number of elements to check back in the cluster in
 /// relation to the angle variance
+/// @param res_haversine pointer to result phyisical distance
+/// @param res_angle pointer to result angle distance
 /// @return boolean value indicating if the clusters are compatible
 uint8_t check_compatibility(double** data, cluster_t first, unsigned int second,
                             double distance_threshold, double time_threshold,
                             double angle_diff_threshold,
                             double speed_diff_threshold,
-                            unsigned int window_size);
+                            unsigned int window_size, double* res_haversine,
+                            double* res_angle);
 
 /// @brief free all clusters
 /// @param clusters cluster array to free
 /// @param len length of cluster array to free
 void free_all_clusters(cluster_t* clusters, unsigned int len);
-
-/// @brief check the distance between existing cluster and a new point
-/// @param data data points
-/// @param first existing cluster
-/// @param second new contendor point
-/// @return distance between them in meters
-double cluster_distance(double** data, cluster_t first, unsigned int second);
 
 /// @brief add new cluster to the cluster array
 /// @param clusters_array pointer to the cluster of existing arrays
@@ -158,3 +155,6 @@ int find_closest_compatible_cluster(
 double calc_diff(double** data, cluster_t first, unsigned int second,
                  unsigned int window_size,
                  double (*diff_func)(double*, double*));
+
+void mean_between(double** data, cluster_t cluster, double* res_mean,
+                  unsigned int start, unsigned int end);

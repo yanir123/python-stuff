@@ -71,41 +71,55 @@ double calc_angle_diff(double **data, cluster_t first, unsigned int second,
   return calc_diff(data, first, second, window_size, angle_degree);
 }
 
+void mean_between(double **data, cluster_t cluster, double *res_mean,
+                  unsigned int start, unsigned int end) {
+  for (unsigned int i = start; i < end; i++) {
+    for (unsigned int j = 0; j < WIDTH; j++) {
+      res_mean[j] += data[cluster.indices[i]][j] / (end - start);
+    }
+  }
+}
+
 double calc_diff(double **data, cluster_t first, unsigned int second,
                  unsigned int window_size,
                  double (*diff_func)(double *, double *)) {
   unsigned int first_angle_window =
       window_size > first.len ? first.len : window_size;
 
-  double general_diff =
-      diff_func(data[first.indices[first.len - first_angle_window]],
-                data[first.indices[first.len - 1]]);
+  unsigned int start = first.len - first_angle_window;
+  unsigned int end = first.len - 1;
+  unsigned int middle = start + (end - start) / 2;
 
-  double new_diff = diff_func(
-      data[first.indices[first.len - first_angle_window]], data[second]);
+  double first_half_mean[WIDTH] = {0};
+  double second_half_mean[WIDTH] = {0};
+
+  mean_between(data, first, first_half_mean, start, middle);
+  mean_between(data, first, second_half_mean, middle, end);
+
+  double general_diff = diff_func(first_half_mean, second_half_mean);
+
+  double new_diff = diff_func(first_half_mean, data[second]);
 
   return fabs(general_diff - new_diff);
-}
-
-double cluster_distance(double **data, cluster_t first, unsigned int second) {
-  return haversine_distance(data[first.indices[first.len - 1]], data[second]);
 }
 
 uint8_t check_compatibility(double **data, cluster_t first, unsigned int second,
                             double distance_threshold, double time_threshold,
                             double angle_diff_threshold,
                             double speed_diff_threshold,
-                            unsigned int window_size) {
+                            unsigned int window_size, double *res_haversine,
+                            double *res_angle) {
   double *first_cluster_last_element = data[first.indices[first.len - 1]];
   double *second_element = data[second];
-  double distance =
+  *res_haversine =
       haversine_distance(first_cluster_last_element, second_element);
   double speed_diff = calc_speed_diff(data, first, second, window_size);
-  double angle_diff = calc_angle_diff(data, first, second, window_size);
+  *res_angle = calc_angle_diff(data, first, second, window_size);
   double time_diff =
       fabs(second_element[EPOCH] - first_cluster_last_element[EPOCH]);
 
-  return distance < distance_threshold && angle_diff < angle_diff_threshold &&
+  return *res_haversine < distance_threshold &&
+         *res_angle < angle_diff_threshold &&
          speed_diff < speed_diff_threshold && time_diff < time_threshold;
 }
 
@@ -174,12 +188,15 @@ int find_closest_compatible_cluster(
   double min_value = INFINITY;
 
   for (unsigned int i = 0; i < cluster_len; i++) {
-    double distance = cluster_distance(data, clusters_array[i], index);
+    double haversine_distance = 0;
+    double angle_ditstance = 0;
 
-    if (distance < min_value &&
-        check_compatibility(data, clusters_array[i], index, distance_threshold,
+    if (check_compatibility(data, clusters_array[i], index, distance_threshold,
                             time_threshold, angle_diff_threshold,
-                            speed_diff_threshold, window_size)) {
+                            speed_diff_threshold, window_size,
+                            &haversine_distance, &angle_ditstance) &&
+        sqrt(pow(haversine_distance, 2) + pow(angle_ditstance, 2)) <
+            min_value) {
       min_index = i;
       min_value = min_value;
     }

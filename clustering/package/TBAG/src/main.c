@@ -430,8 +430,8 @@ int main(int argc, char** argv, char** wenv) {
   printf("executed in :%.20f seconds\n",
          (double)(end.QuadPart - start.QuadPart) / frequency.QuadPart);
 #else
-  agglomerative_clustering(data_pointer, HEIGHT, 100, INFINITY, INFINITY, 10, 0,
-                           4, res);
+  agglomerative_clustering(data_pointer, HEIGHT, 200, INFINITY, 90, INFINITY,
+                           10, res);
 #endif
   print_array_res(res, HEIGHT);
 
