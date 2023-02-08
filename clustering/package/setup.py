@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="TBAG",
-    version="0.0.1",
+    version="0.0.4",
     author="Inferno Team",
     author_email="sharoni@gmail.com",
     description="Package to cluster trajectories",
@@ -19,5 +19,5 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: Windows",
     ],
-    python_requires='>=3.8',
+    python_requires='>=3.11',
 )

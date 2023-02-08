@@ -156,5 +156,11 @@ double calc_diff(double** data, cluster_t first, unsigned int second,
                  unsigned int window_size,
                  double (*diff_func)(double*, double*));
 
+/// @brief get the mean plot of range in cluster
+/// @param data data points
+/// @param cluster cluster to run on
+/// @param res_mean mean plot
+/// @param start begining of range
+/// @param end end of range
 void mean_between(double** data, cluster_t cluster, double* res_mean,
                   unsigned int start, unsigned int end);
