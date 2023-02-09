@@ -423,8 +423,8 @@ int main(int argc, char** argv, char** wenv) {
 
   QueryPerformanceFrequency(&frequency);
   QueryPerformanceCounter(&start);
-  agglomerative_clustering(data_pointer, HEIGHT, INFINITY, INFINITY, INFINITY,
-                           INFINITY, 4, res);
+  agglomerative_clustering(data_pointer, HEIGHT, 300, INFINITY, 10, INFINITY,
+                           10, res);
   QueryPerformanceCounter(&end);
 
   printf("executed in :%.20f seconds\n",

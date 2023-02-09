@@ -83,10 +83,14 @@ void mean_between(double **data, cluster_t cluster, double *res_mean,
 double calc_diff(double **data, cluster_t first, unsigned int second,
                  unsigned int window_size,
                  double (*diff_func)(double *, double *)) {
-  unsigned int first_angle_window =
-      window_size > first.len ? first.len : window_size;
+  // unsigned int first_angle_window =
+  //     window_size > first.len ? first.len : window_size;
 
-  unsigned int start = first.len - first_angle_window;
+  if (window_size > first.len) {
+    return 0;
+  }
+
+  unsigned int start = first.len - window_size;
   unsigned int end = first.len - 1;
   unsigned int middle = start + (end - start) / 2;
 
@@ -117,7 +121,7 @@ uint8_t check_compatibility(double **data, cluster_t first, unsigned int second,
   *res_angle = calc_angle_diff(data, first, second, window_size);
   double time_diff =
       fabs(second_element[EPOCH] - first_cluster_last_element[EPOCH]);
-
+  // printf("angle diff is: %f\n", *res_angle);
   return *res_haversine < distance_threshold &&
          *res_angle < angle_diff_threshold &&
          speed_diff < speed_diff_threshold && time_diff < time_threshold;
