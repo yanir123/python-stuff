@@ -127,6 +127,8 @@ Then we can run the command:
 
 `python -m build --wheel`
 
+Or just run `make` if you have it installed.
+
 Please make sure that you are using the right python version when building the distribution.
 
 Your new whl file will be ready in the dist directory.
