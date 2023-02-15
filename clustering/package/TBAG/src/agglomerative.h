@@ -62,9 +62,10 @@ double calc_speed(double* first, double* second);
 /// @param first first cluster
 /// @param second second cluster
 /// @param window_size window frame to calc variance on
+/// @param angle_diff_threshold value to return if cluster is small
 /// @return the angle difference between the two clusters
 double calc_angle_diff(double** data, cluster_t first, unsigned int second,
-                       unsigned int window_size);
+                       unsigned int window_size, double angle_diff_threshold);
 
 /// @brief calculate the angle between two points
 /// @param first first data point
@@ -151,10 +152,11 @@ int find_closest_compatible_cluster(
 /// @param second new contendor
 /// @param window_size number of element to check back on
 /// @param diff_func function to calc the difference
+/// @param threshold value to return if cluster is small
 /// @return
 double calc_diff(double** data, cluster_t first, unsigned int second,
                  unsigned int window_size,
-                 double (*diff_func)(double*, double*));
+                 double (*diff_func)(double*, double*), double threshold);
 
 /// @brief get the mean plot of range in cluster
 /// @param data data points
@@ -164,3 +166,13 @@ double calc_diff(double** data, cluster_t first, unsigned int second,
 /// @param end end of range
 void mean_between(double** data, cluster_t cluster, double* res_mean,
                   unsigned int start, unsigned int end);
+
+/// @brief calc speed diff on a moving mean window
+/// @param data data points
+/// @param first existing cluster to perform window function on
+/// @param second new contender point
+/// @param window_size the number of data points from the end to run over
+/// @param speed_diff_threshold value to return if cluster is small
+/// @return the speed diff
+double calc_speed_diff(double** data, cluster_t first, unsigned int second,
+                       unsigned int window_size, double speed_diff_threshold);

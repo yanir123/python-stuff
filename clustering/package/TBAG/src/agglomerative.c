@@ -50,11 +50,7 @@ double haversine_distance(double *first, double *second) {
 double calc_speed(double *first, double *second) {
   double time_diff = (second[EPOCH] - first[EPOCH]);
 
-  if (time_diff == 0) {
-    return 0;
-  }
-
-  return haversine_distance(first, second) / time_diff;
+  return time_diff == 0 ? 0 : haversine_distance(first, second) / time_diff;
 }
 
 double angle_degree(double *first, double *second) {
@@ -62,13 +58,15 @@ double angle_degree(double *first, double *second) {
 }
 
 double calc_speed_diff(double **data, cluster_t first, unsigned int second,
-                       unsigned int window_size) {
-  return calc_diff(data, first, second, window_size, calc_speed);
+                       unsigned int window_size, double speed_diff_threshold) {
+  return calc_diff(data, first, second, window_size, calc_speed,
+                   speed_diff_threshold);
 }
 
 double calc_angle_diff(double **data, cluster_t first, unsigned int second,
-                       unsigned int window_size) {
-  return calc_diff(data, first, second, window_size, angle_degree);
+                       unsigned int window_size, double angle_diff_threshold) {
+  return calc_diff(data, first, second, window_size, angle_degree,
+                   angle_diff_threshold);
 }
 
 void mean_between(double **data, cluster_t cluster, double *res_mean,
@@ -82,16 +80,16 @@ void mean_between(double **data, cluster_t cluster, double *res_mean,
 
 double calc_diff(double **data, cluster_t first, unsigned int second,
                  unsigned int window_size,
-                 double (*diff_func)(double *, double *)) {
+                 double (*diff_func)(double *, double *), double threshold) {
   // unsigned int first_angle_window =
   //     window_size > first.len ? first.len : window_size;
 
   if (window_size > first.len) {
-    return 0;
+    return threshold;
   }
 
   unsigned int start = first.len - window_size;
-  unsigned int end = first.len - 1;
+  unsigned int end = first.len;
   unsigned int middle = start + (end - start) / 2;
 
   double first_half_mean[WIDTH] = {0};
@@ -117,14 +115,15 @@ uint8_t check_compatibility(double **data, cluster_t first, unsigned int second,
   double *second_element = data[second];
   *res_haversine =
       haversine_distance(first_cluster_last_element, second_element);
-  double speed_diff = calc_speed_diff(data, first, second, window_size);
-  *res_angle = calc_angle_diff(data, first, second, window_size);
+  double speed_diff =
+      calc_speed_diff(data, first, second, window_size, speed_diff_threshold);
+  *res_angle =
+      calc_angle_diff(data, first, second, window_size, angle_diff_threshold);
   double time_diff =
       fabs(second_element[EPOCH] - first_cluster_last_element[EPOCH]);
-  // printf("angle diff is: %f\n", *res_angle);
-  return *res_haversine < distance_threshold &&
-         *res_angle < angle_diff_threshold &&
-         speed_diff < speed_diff_threshold && time_diff < time_threshold;
+  return *res_haversine <= distance_threshold &&
+         *res_angle <= angle_diff_threshold &&
+         speed_diff <= speed_diff_threshold && time_diff <= time_threshold;
 }
 
 void free_all_clusters(cluster_t *clusters, unsigned int len) {
