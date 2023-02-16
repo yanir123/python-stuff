@@ -198,7 +198,7 @@ int find_closest_compatible_cluster(
                             time_threshold, angle_diff_threshold,
                             speed_diff_threshold, window_size,
                             &haversine_distance, &angle_ditstance) &&
-        sqrt(pow(haversine_distance, 2) + pow(angle_ditstance, 2)) <
+        sqrt(pow(haversine_distance, 2) + pow(angle_ditstance, 2)) <=
             min_value) {
       min_index = i;
       min_value = min_value;
